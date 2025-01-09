@@ -1,4 +1,5 @@
 #Deprecated configuration for create a s3 bucket website resource
+# https://medium.com/@frankpromiseedah/hosting-a-static-website-on-aws-s3-using-terraform-e12addd22d18
 #  resource "aws_s3_bucket" "frontend_artifacts" {
 #   bucket = var.S3FrontEnd
 #   acl    = "public-read"
