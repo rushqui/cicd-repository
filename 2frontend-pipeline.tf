@@ -54,7 +54,7 @@ resource "aws_codebuild_project" "tf-frontend1" {
     environment_variable {
       type  = "PLAINTEXT"
       name  = "S3_BUCKET_URL"
-      value = aws_s3_bucket.frontend_artifacts.id
+      value = aws_s3_bucket_website_configuration.frontend_artifacts.id
     }
   }
   source {
@@ -118,7 +118,7 @@ resource "aws_codepipeline" "frontend1_pipeline" {
     action {
       category = "Deploy"
       configuration = {
-        "BucketName" = aws_s3_bucket.frontend_artifacts.id
+        "BucketName" = aws_s3_bucket_website_configuration.frontend_artifacts.id
         "Extract"    = "true"
       }
       input_artifacts = [
