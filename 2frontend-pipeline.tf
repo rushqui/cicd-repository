@@ -21,6 +21,14 @@ resource "aws_s3_bucket_acl" "bucket-acl" {
   depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
 }
 
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+  depends_on = [aws_s3_bucket_public_access_block.example]
+}
+
 resource "aws_s3_bucket_public_access_block" "example" {
   bucket = data.aws_s3_bucket.selected-bucket.id
 
