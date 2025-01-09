@@ -1,11 +1,25 @@
-resource "aws_s3_bucket" "frontend_artifacts" {
-  bucket = var.S3FrontEnd
-  acl    = "public-read"
-  policy = data.aws_iam_policy_document.website_policy.json
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
+#Deprecated configuration for create a s3 bucket website resource
+#  resource "aws_s3_bucket" "frontend_artifacts" {
+#   bucket = var.S3FrontEnd
+#   acl    = "public-read"
+#   policy = data.aws_iam_policy_document.website_policy.json
+#   website {
+#     index_document = "index.html"
+#     error_document = "index.html"
+#   }
+# }
+
+resource "aws_s3_bucket_website_configuration" "frontend_artifacts" {
+   bucket = var.S3FrontEnd
+
+   index_document {
+    suffix = "index.html"
   }
+
+  error_document {
+    key = "error.html"
+  }
+  
 }
 data "aws_iam_policy_document" "website_policy" {
   statement {
