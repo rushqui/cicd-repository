@@ -8,21 +8,36 @@
 #     error_document = "index.html"
 #   }
 # }
+resource "aws_s3_bucket" "frontend_artifacts" {
+  bucket = var.S3FrontEnd
+}
+data "aws_s3_bucket" "selected-bucket" {
+  bucket = aws_s3_bucket.frontend_artifacts.bucket
+}
 
-resource "aws_s3_bucket_website_configuration" "frontend_artifacts" {
-   bucket = var.S3FrontEnd
+resource "aws_s3_bucket_acl" "bucket-acl" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+  acl    = "public-read"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
+}
 
-   index_document {
-    suffix = "index.html"
-  }
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
 
-  error_document {
-    key = "error.html"
-  }
-  
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "bucket-policy" {
+  bucket = data.aws_s3_bucket.selected-bucket.id
+  policy = data.aws_iam_policy_document.website_policy.json
 }
 data "aws_iam_policy_document" "website_policy" {
   statement {
+    sid    = "AllowPublicRead"
+    effect = "Allow"
     actions = [
       "s3:GetObject"
     ]
@@ -34,7 +49,38 @@ data "aws_iam_policy_document" "website_policy" {
       "arn:aws:s3:::${var.S3FrontEnd}/*"
     ]
   }
+
+  depends_on = [aws_s3_bucket_public_access_block.example]
 }
+
+resource "aws_s3_bucket_website_configuration" "frontend_artifacts" {
+   bucket = data.aws_s3_bucket.selected-bucket.bucket
+
+   index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
+  
+}
+# data "aws_iam_policy_document" "website_policy" {
+#   statement {
+#     sid    = "AllowPublicRead"
+#     effect = "Allow"
+#     actions = [
+#       "s3:GetObject"
+#     ]
+#     principals {
+#       identifiers = ["*"]
+#       type        = "AWS"
+#     }
+#     resources = [
+#       "arn:aws:s3:::${var.S3FrontEnd}/*"
+#     ]
+#   }
+# }
 resource "aws_codebuild_project" "tf-frontend1" {
   name         = "cicd-build-${var.name_frontend}"
   description  = "pipeline for aplicacion frontend"
